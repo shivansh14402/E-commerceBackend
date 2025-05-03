@@ -6,7 +6,7 @@ exports.addNewProduct = async (req, res) => {
 
     try {
 
-        let { title, description, price, imageUrl= [] } = req.body;
+        let { title, description, price, imageUrl = [] } = req.body;
 
         let newProd = await Product.create({ title, description, price, imageUrl });
 
@@ -39,7 +39,7 @@ exports.placeOrder = async (req, res) => {
 
         let { products, user } = req.body;
 
-        if(products, user){
+        if (products, user) {
             let order = await Orders.create({ products, user });
 
             order.save();
@@ -50,7 +50,39 @@ exports.placeOrder = async (req, res) => {
             return res.status(200).send({ isSuccess: true, message: "Order Placed Successfully", data: order })
         }
     }
-    catch(err){
+    catch (err) {
         return res.status(400).send({ isSuccess: false, message: err.message, data: null })
+    }
+}
+
+exports.fetchOrderOfUser = async (req, res) => {
+
+    try {
+        let userId = req?.data?._id;
+
+        if(userId){
+            let orders = await Orders.find().getOrderByUser(userId).populate('products.product').exec();
+            return res.status(200).send({ isSuccess: true, message: "Orders Fetched Successfully", data: orders })
+        }
+
+    }
+    catch (err) {
+        return res.status(400).send({ isSuccess: false, message: err.message, data: null });
+    }
+}
+
+exports.fetchOrderByProductId = async (req, res) => {
+
+    try {
+        let productId = req?.params?.productId;
+
+        if(productId){
+            let orders = await Orders.find().getOrderByProduct(productId).populate('products.product').exec();
+            return res.status(200).send({ isSuccess: true, message: "Orders Fetched Successfully", data: orders })
+        }
+
+    }
+    catch (err) {
+        return res.status(400).send({ isSuccess: false, message: err.message, data: null });
     }
 }

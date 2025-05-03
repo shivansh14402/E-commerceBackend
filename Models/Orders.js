@@ -11,6 +11,16 @@ const Orders = new mongoose.Schema({
     user: {
         user: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
     }
-}, { timestamps: true });
+}, {
+    timestamps: true,
+    query: {
+        getOrderByUser: function(userId) {
+            return this.where({ 'user.user': new mongoose.Types.ObjectId(userId) })
+        },
+        getOrderByProduct: function(productId) {
+            return this.where({ 'products.product': new mongoose.Types.ObjectId(productId) })
+        }
+    }
+});
 
 exports.Orders = mongoose.model('Orders', Orders);
