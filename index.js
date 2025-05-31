@@ -14,6 +14,10 @@ let server = express();
 server.use(express.json());
 server.use(cookieParser());
 
+server.use("/overview", (req, res) => {
+    res.status(304).send
+})
+
 server.use("/auth", authRouter);
 server.use("/product", productRouter);
 

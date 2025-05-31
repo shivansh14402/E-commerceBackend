@@ -24,7 +24,19 @@ exports.getProductList = async (req, res) => {
 
     try {
 
-        let data = await Product.find().sendAll("").exec();
+        let { search="", size=100, page=0 } = req.query;
+
+        let data = await Product.find()
+        .where({
+            "$or": [
+                {title: { '$regex': search, '$options': 'i' }},
+                {description: { '$regex': search, '$options': 'i' }}
+            ]
+        })
+        .select(['title', 'description'])
+        .skip(page*size)
+        .limit(size)
+        .exec();
 
         return res.status(200).send({ isSuccess: true, message: "Product List Fetched Successfully", data: data })
     }
@@ -60,8 +72,34 @@ exports.fetchOrderOfUser = async (req, res) => {
     try {
         let userId = req?.data?._id;
 
+        let { search="", createdAtStart, createdAtEnd } = req?.query;
+
+        console.log(createdAtStart, createdAtEnd)
+
         if(userId){
-            let orders = await Orders.find().getOrderByUser(userId).populate('products.product').exec();
+            let orders = await Orders.find()
+            .getOrderByUser(userId)
+            .populate('products.product')
+            .where('createdAt').gte(new Date(createdAtStart)).lte(new Date(createdAtEnd))
+            .exec();
+
+            orders = orders.filter((orders) => {
+
+                if(orders?.products?.length > 0){
+                   
+                    orders.products = orders?.products.filter((product) => {
+
+                        return (
+                            (product?.product?.title?.toLowerCase()?.includes(search) || product?.product?.description?.toLowerCase()?.includes(search))
+                        )
+                    });
+
+                    return orders.products?.length > 0;
+                }
+
+                return false;
+            })
+
             return res.status(200).send({ isSuccess: true, message: "Orders Fetched Successfully", data: orders })
         }
 

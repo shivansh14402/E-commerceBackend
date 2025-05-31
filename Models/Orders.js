@@ -14,12 +14,19 @@ const Orders = new mongoose.Schema({
 }, {
     timestamps: true,
     query: {
-        getOrderByUser: function(userId) {
-            return this.where({ 'user.user': new mongoose.Types.ObjectId(userId) })
+        getOrderByUser: function (userId, filters, search) {
+            return this.where({
+                'user.user': new mongoose.Types.ObjectId(userId),
+                // 'products': {
+                //     '$elemMatch': { 'quantity': { '$gt': 2 } },
+                //     '$not': { '$elemMatch': {'quantity': { '$lt': 1 }} },
+                //     ...filters,
+                // }
+            });
         },
-        getOrderByProduct: function(productId) {
+        getOrderByProduct: function (productId) {
             return this.where({ 'products.product': new mongoose.Types.ObjectId(productId) })
-        }
+        },
     }
 });
 
